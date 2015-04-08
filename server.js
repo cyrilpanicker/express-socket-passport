@@ -45,24 +45,24 @@ app.use(passport.session());
 
 var users = [
 	{
-		uid:'rthanka',
+		uid:'cyril',
 		userPassword:'infy@6000',
-		email:'rthanka@searshc.com'
+		email:'cyril@xyz.com'
 	},
 	{
-		uid:'ssiraju',
+		uid:'tom',
 		userPassword:'Apr@2015',
-		email:'ssiraju@searshc.com'
+		email:'tom@xyz.com'
 	},
 	{
-		uid:'schand3',
-		userPassword:'sears@2017',
-		email:'schand3@searshc.com'
+		uid:'john',
+		userPassword:'xyz@2017',
+		email:'john@xyz.com'
 	},
 	{
-		uid:'amuthiy',
-		userPassword:'arun@1903',
-		email:'amuthiy@searshc.com'
+		uid:'james',
+		userPassword:'james@1903',
+		email:'james@xyz.com'
 	}
 ];
 
