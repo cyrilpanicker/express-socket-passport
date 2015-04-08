@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="scripts/angular.min.js"></script>
+	<script src="scripts/socket.io.min.js"></script>
+	<script>
+	var socket = io();
+	socket.on('server-message',function (message) {
+		console.log('received message from server : '+message.message);
+	});
+	socket.on('server-broadcasted-message',function (message) {
+		console.log('received message from server : '+message.message);
+	})
+	angular.module('app', [])
+	.factory('Service', ['$http', function ($http) {
+		var service = {};
+		service.login = function (credentials) {
+			return $http({
+				method:'POST',
+				url:'/login',
+				data:{
+					username:credentials.username,
+					password:credentials.password
+				}
+			});
+		};
+		service.getUser = function () {
+			return $http({
+				method:'GET',
+				url:'/user'
+			});
+		};
+		return service;
+	}])
+	.controller('LoginController', ['$scope','Service', function ($scope,Service) {
+		$scope.user={};
+		$scope.login = function () {
+			$scope.user = {};
+			$scope.errorMessage = '';
+			Service.login($scope.credentials)
+			.then(function (response){
+				$scope.user.userName = response.data.userName;
+				$scope.errorMessage = response.data.message;
+			});
+		};
+		Service.getUser()
+		.then(function (response){
+			if (response.data.message == 'user-not-signed-in') {
+				$scope.user = {};
+			} else {
+				$scope.user.userName = response.data.userName;
+			}
+		});
+	}]);
+	</script>
+</head>
+<body>
+	<form ng-controller="LoginController" ng-submit="login()" novalidate>
+		Logged In As :
+		<span ng-show="user && user.userName" ng-bind="user.userName"></span>
+		<span ng-hide="user && user.userName">Guest</span><br/>
+		<input ng-model="credentials.username"/><br/>
+		<input ng-model="credentials.password" type="password"/><br/>
+		<button type="submit">Submit</button><br/>
+		<span ng-bind="errorMessage"></span>
+	</form>
+</body>
+</html>
