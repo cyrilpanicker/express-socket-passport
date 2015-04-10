@@ -140,7 +140,7 @@ app.get('/user',function (req,res,next) {
 
 io.use(function (socket,next) {
 	var clientCookie = socket.handshake.headers.cookie;
-	if (clientCookie) {
+	if (clientCookie && cookie.parse(clientCookie)['connect.sid']) {
 		socket.sessionId = cookieParser.signedCookie(cookie.parse(clientCookie)['connect.sid'],'secret');
 	}
 	next();
