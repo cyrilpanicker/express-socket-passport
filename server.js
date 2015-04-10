@@ -6,6 +6,7 @@ cookieParser = require('cookie-parser'),
 MongoStore = require('connect-mongo')(session),
 LocalStrategy = require('passport-local').Strategy;
 var cookie = require('cookie');
+var passportSocketIo = require('passport.socketio');
 
 var app = express();
 
@@ -25,7 +26,8 @@ var sessionStore = new MongoStore({
 
 var sessionOptions = {
 	store:sessionStore,
-    secret: 'secret'
+    secret: 'secret',
+    key:'cyril.sid'
     // saveUninitialized: true,
     // resave: false,
     // store: sessionStore,
@@ -138,22 +140,31 @@ app.get('/user',function (req,res,next) {
 });
 
 
-io.use(function (socket,next) {
-	var clientCookie = socket.handshake.headers.cookie;
-	if (clientCookie && cookie.parse(clientCookie)['connect.sid']) {
-		socket.sessionId = cookieParser.signedCookie(cookie.parse(clientCookie)['connect.sid'],'secret');
-	}
-	next();
-});
+// io.use(function (socket,next) {
+// 	var clientCookie = socket.handshake.headers.cookie;
+// 	if (clientCookie && cookie.parse(clientCookie)['cyril.sid']) {
+// 		socket.sessionId = cookieParser.signedCookie(cookie.parse(clientCookie)['cyril.sid'],'secret');
+// 		console.log(socket.sessionId);
+// 	}
+// 	next();
+// });
+
+io.use(passportSocketIo.authorize({
+	cookieParser:cookieParser,
+    secret: 'secret',
+    key:'cyril.sid',
+    store:sessionStore,
+    success:function (data,accept) { accept(null,true); },
+    fail:function (data, message, error, accept) { accept(null, true); }
+}));
 
 io.on('connection',function (socket) {
 	socket.emit('server-message',{message:'hi'});
 	socket.on('client-message',function (message) {
-		console.log('sessionId : '+socket.sessionId);
-		sessionStore.get(socket.sessionId,function (err,session) {
+		sessionStore.get(socket.request.sessionID,function (err,session) {
 			if (err) {
 				console.log(err);
-			} else {
+			} else if (session && session.passport) {
 				console.log('user : '+session.passport.user);
 			}
 		});
